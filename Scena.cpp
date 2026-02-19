@@ -1,0 +1,171 @@
+#include <SFML/Graphics.hpp>
+#include <vector>
+
+const int WIDTH = 800;
+const int HEIGHT = 600;
+
+/// @brief Interfaccia astratta utilizzata dalle varie implementazioni
+class GameObject
+{
+    protected:
+    int x, y, width, height;
+    bool enabled = true;
+
+    public:
+
+    virtual void Update() = 0;
+    virtual void Draw() = 0;
+    virtual void SetPosition(int x, int y){ this->x = x; this->y = y; }
+    virtual int GetX() { return x;}
+    virtual int GetY() { return y;}
+    virtual int GetW() { return width;}
+    virtual int GetH() { return height;}
+    virtual void SetEnabled(bool status){enabled = status;}
+    virtual bool GetEnabled(){return enabled;}
+};
+
+class Collider
+{
+    public:
+
+    static bool DetectCollision(GameObject* obj1, GameObject* obj2)
+    {
+        if(obj1 == nullptr || obj2 == nullptr)
+        {
+            return false;
+        }
+
+        //calcolo il centro del primo oggetto
+        int x = obj1->GetX() + obj1->GetW()/2;
+        int y = obj1->GetY() + obj1->GetW()/2;
+
+        return CheckPointInArea(x,y, obj2);
+    }
+
+    //verifico se il punto è interno al rettangolo dell'oggetto
+    static bool CheckPointInArea(int x, int y, GameObject* obj)
+    {
+        if( obj == nullptr) return false;
+
+        if(x >= obj->GetX() && x <= obj->GetX() + obj->GetW())
+            if(y >= obj->GetY() && y <= obj->GetY() + obj->GetH())
+                return true;
+
+        return false;
+
+    }
+
+};
+
+
+/// @brief Classe base che fornisce una implementazione di base per gestire la scena
+class Scena
+{
+    protected:
+    const int _maxNumObject = 100;
+    std::vector<GameObject*> _gameObjects;
+
+    public:
+    virtual void AddGameObject(GameObject *pGame)
+    {
+        _gameObjects.push_back(pGame);
+    }
+    
+    virtual void Update()
+    {
+        if( _gameObjects.size() > 0)
+        {
+            //for( GameObject *p : _gameObjects)
+            for(auto p = _gameObjects.begin(); p != _gameObjects.end();)
+            {
+                if( (*p)->GetEnabled())
+                {
+                      (*p)->Update();
+                      p++;
+                }
+                else
+                _gameObjects.erase(p);
+            }
+        }
+    };
+    
+    virtual void Draw(){
+
+        if(_gameObjects.size() > 0)
+        {
+            for(auto go : _gameObjects)
+            {
+                if( go->GetEnabled()) 
+                    go->Draw();
+            }
+        }
+    };
+
+    ~Scena()
+    {
+        _gameObjects.clear();
+    }    
+};
+
+/// @brief Implementazione di GameObject specifica per la libreria SFML
+class SFMLGameObject : public GameObject
+{
+    protected:
+    sf::Drawable *_pDrawable;
+    sf::Transformable *_pTransformable;
+    sf::RenderWindow *_pRW;
+
+    public:
+
+    SFMLGameObject(sf::RenderWindow *rw, sf::Drawable *d = nullptr, sf::Transformable *t = nullptr)
+    {
+        if(rw == nullptr)
+        {
+            throw std::runtime_error("Manca la RenderWindow");
+        }
+        _pRW = rw;
+        _pDrawable = d;
+        _pTransformable = t;
+        
+    }
+
+    virtual void Update() override
+    {
+        _pTransformable->setPosition(sf::Vector2f(x,y));
+    }
+
+    virtual void Draw() override
+    {
+        if(_pRW != nullptr && _pDrawable!= nullptr)
+        {
+            _pRW->draw((*_pDrawable));
+        }
+    }
+};
+
+
+/// @brief SFMLScena estende la classe base Scena e fornisce una implementazione specifica per la libreia SFML
+class SFMLScena: public Scena
+{
+    protected:
+    sf::RenderWindow *ptrWindow;
+    
+    public: 
+
+    SFMLScena(sf::RenderWindow *pWindow)
+    {
+        ptrWindow = pWindow;
+    }
+
+    /*virtual void Update() override
+    {
+    }*/
+
+    virtual void Draw() override
+    {
+        if(ptrWindow != nullptr)
+        {
+            Scena::Draw();
+        }
+    }
+};
