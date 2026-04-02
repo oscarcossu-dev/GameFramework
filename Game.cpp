@@ -1,5 +1,9 @@
+#ifndef OSK_GAME_CPP
+#define OSK_GAME_CPP
+
 #include "Scena.cpp"
 #include <SFML/Window/Keyboard.hpp>
+#include <SFML/System.hpp>
 
 class Game
 {
@@ -23,13 +27,22 @@ class Game
 class SFMLGame : public Game
 {
     protected:
-    sf::RenderWindow *pWindow = nullptr;
+    
     SFMLScena *pScena = nullptr;
+    sf::Thread thread;
+    sf::Mutex mutex;
     bool _Initialized = false;
+    bool _ThreadStarted = false;
+    bool _Running = true;
+    int _threadWait = 1000 / 60;
+
     public: 
     int Width, Height;
+    sf::RenderWindow *pWindow = nullptr;
+
 
     SFMLGame(int w = 800, int h=600)
+    :thread(&SFMLGame::PopEvent, this)
     {
         Width = w;
         Height = h;
@@ -37,6 +50,12 @@ class SFMLGame : public Game
 
     virtual ~SFMLGame()
     {
+        if(_ThreadStarted)
+        {
+            _ThreadStarted = false;
+            thread.terminate();
+        }
+
         if(_Initialized)
         {
             delete pWindow;
@@ -59,38 +78,102 @@ class SFMLGame : public Game
             return;
 
         // The Game Loop
-
+        _Running = true;
         while (pWindow->isOpen())
         {
-            sf::Event event;
+            if(!_ThreadStarted)
+            {
+                _ThreadStarted = true;
+                thread.launch();
+            }
+
+            //UpdateDrawThread();
+            // sf::Event event;
+            /*mutex.lock();
             while (pWindow->pollEvent(event))
             {
                ManageEvent(event);
             }
+            mutex.unlock();*/
+            if(_Running)
+            {
+                mutex.lock();
+                pScena->Update();
+                pWindow->clear();
+                pScena->Draw();
+                pWindow->display();
+                mutex.unlock();
+            }
+            sf::sleep(sf::milliseconds(_threadWait));
+        }
+    }
 
+
+    void PopEvent()
+    {
+        sf::Event event;
+        while(_ThreadStarted && _Running)
+        {
+            while (pWindow->pollEvent(event))
+            {
+                ManageEvent(event);
+            }
+            sf::sleep(sf::milliseconds(_threadWait / 4));
+        }
+    }
+
+
+    virtual void ManageEvent(sf::Event event)
+    {   
+        if(_Running)
+        {
+            if (event.type == sf::Event::Closed)
+            {
+                mutex.lock();
+                _ThreadStarted = false;
+                thread.terminate();
+                pWindow->close();
+                mutex.unlock();
+                return;
+            }
+                    
+            if( event.type == sf::Event::KeyPressed)
+            {
+                switch (event.key.code)
+                {
+                    case sf::Keyboard::Key::Escape:
+                        
+                        _ThreadStarted = false;
+                        _Running = false;
+                        
+                        mutex.lock();
+                        pWindow->close();
+                        mutex.unlock();
+
+                        thread.terminate();
+                    break;
+                    
+                    default:
+                    break;
+                }
+            }
+        }    
+    }
+    
+    //non utilizzato. rimuovere
+    virtual void UpdateDrawThread()
+    {
+        while(_ThreadStarted && _Running)
+        {
+            mutex.lock();
             pScena->Update();
             pWindow->clear();
             pScena->Draw();
             pWindow->display();
-        }
-    }
-
-    virtual void ManageEvent(sf::Event event)
-    {
-        if (event.type == sf::Event::Closed)
-                    pWindow->close();
-                
-        if( event.type == sf::Event::KeyPressed)
-        {
-            switch (event.key.code)
-            {
-                case sf::Keyboard::Key::Escape:
-                    pWindow->close();
-                break;
-                
-                default:
-                break;
-            }
+            mutex.unlock();
+            sf::sleep(sf::milliseconds(_threadWait));
         }
     }
 };
+
+#endif

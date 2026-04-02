@@ -1,6 +1,8 @@
 #include <vector>
 #include "Game.cpp"
 #include <cstdlib>
+#include <iostream>
+#include <chrono>
 
 
 class SFMLGOPlayer : public SFMLGameObject
@@ -22,15 +24,17 @@ class SFMLGOPlayer : public SFMLGameObject
     void InputBehaviour(sf::Event event)
     {
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left))
+        //if(/*event.type == sf::Event::KeyPressed && */event.key.code == sf::Keyboard::Key::Left)
         {   
             if( x - delta_movement > 0)
                 x -= delta_movement;
         }
 
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right))
+        //if(/*event.type == sf::Event::KeyPressed && */ event.key.code == sf::Keyboard::Key::Right)
         {  
-            if(x + delta_movement < HEIGHT) 
-            x += delta_movement;
+            if(x + width + delta_movement < WIDTH) 
+                x += delta_movement;
         }
     }
 };
@@ -112,6 +116,8 @@ class SFMLGameTest1Scena : public SFMLScena
 {
     std::vector<SFMLGOBullet*> _bullets;
     std::vector<SFMLGOEnemy*> _enemies;
+    std::chrono::steady_clock::time_point  _tLastBulletShot = std::chrono::steady_clock::now();
+    const int _tDeltaBullets = 250;
 
     public:
     SFMLGameTest1Scena(sf::RenderWindow *window) : SFMLScena(window)
@@ -119,9 +125,15 @@ class SFMLGameTest1Scena : public SFMLScena
 
     void AddBullet(int x, int y)
     {
-        SFMLGOBullet *p = new SFMLGOBullet(ptrWindow);
-        p->SetPosition(x,y);
-        _bullets.push_back(p);
+        std::chrono::steady_clock::time_point  now = std::chrono::steady_clock::now();
+
+        if( std::chrono::duration_cast<std::chrono::milliseconds>(now - _tLastBulletShot).count() > _tDeltaBullets)
+        {
+            SFMLGOBullet *p = new SFMLGOBullet(ptrWindow);
+            p->SetPosition(x,y);
+            _bullets.push_back(p);
+            _tLastBulletShot = now;
+        }
     }
 
     void AddEnemy(SFMLGOEnemy *pObj)
@@ -135,18 +147,19 @@ class SFMLGameTest1Scena : public SFMLScena
     virtual void Update() override
     {
         SFMLScena::Update();
+        int i = 0;
         for(auto elem = _bullets.begin(); elem != _bullets.end();)
         {
             auto p = *elem;
-            
-            if(p->GetY()+30 < 0)
+            i++;
+            if(p->GetY() < 0)//il proiettile va oltre il bordo superiore dello schermo
             {
                 _bullets.erase(elem);
                 delete p;
             }
             else 
             {
-                for(auto go = _enemies.begin(); go != _enemies.end();go++)
+                for(auto go = _enemies.begin(); go != _enemies.end();go++)//controllo la collisione del proiettile con i nemici
                 {
                     if((*go)->GetEnabled() && Collider::DetectCollision(p,(*go)))
                     {
@@ -164,6 +177,7 @@ class SFMLGameTest1Scena : public SFMLScena
                 }
             }
         }
+        std::cout<<"Bullets count:"<<i<<std::endl;
         for(auto enemy : _enemies)
         {
             if(enemy->GetEnabled())
@@ -256,11 +270,11 @@ class SFMLGameTest1 : public SFMLGame
         SFMLGame::ManageEvent(event);
         pPlayer->InputBehaviour(event);
 
-        //if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space))
-        if(event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space)
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space))
+        //if(event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space)
+        //if(event.key.code == sf::Keyboard::Space)
         {
             ((SFMLGameTest1Scena*)pScena)->AddBullet(pPlayer->GetX()+20, pPlayer->GetY());
         }
-
     }
 };
