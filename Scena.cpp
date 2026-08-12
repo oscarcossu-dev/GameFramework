@@ -1,5 +1,6 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
+#include <string>
 
 const int WIDTH = 800;
 const int HEIGHT = 600;
@@ -55,6 +56,15 @@ class Collider
 
     }
 
+};
+
+
+class IBackground
+{
+    public:
+
+    virtual void Update() = 0;
+    virtual void Draw() = 0;
 };
 
 
@@ -144,17 +154,67 @@ class SFMLGameObject : public GameObject
 };
 
 
+class SFMLStaticImageBackground : public IBackground
+{
+    protected:
+    sf::Drawable *_pDrawable;
+    sf::Transformable *_pTransformable;
+    sf::RenderWindow *_pRW;
+    sf::Texture* _pTexture;
+
+    public:
+    SFMLStaticImageBackground(sf::RenderWindow *rw, std::string texturename)
+    {
+        _pRW = rw;
+        sf::Texture* _pTexture = new sf::Texture();
+        _pTexture->loadFromFile(texturename);
+        auto sprite = new sf::Sprite(*_pTexture);
+        sprite->setPosition(sf::Vector2f(0,0));
+        _pTransformable = sprite;
+        _pDrawable = sprite;
+    }
+
+
+    virtual void Update(){
+
+    }
+
+    virtual void Draw()
+    {
+        if(_pRW != nullptr && _pDrawable!= nullptr)
+        {
+            _pRW->draw((*_pDrawable));
+        }
+    }
+
+    ~SFMLStaticImageBackground()
+    {
+        delete _pDrawable;
+        delete _pTransformable;
+        delete _pTexture;
+    }
+};
+
+
+
+
 /// @brief SFMLScena estende la classe base Scena e fornisce una implementazione specifica per la libreia SFML
 class SFMLScena: public Scena
 {
     protected:
     sf::RenderWindow *ptrWindow;
+    IBackground *pBackground;
     
     public: 
 
     SFMLScena(sf::RenderWindow *pWindow)
     {
         ptrWindow = pWindow;
+    }
+
+    void SetupBackground(std::string bgfilename)
+    {
+        pBackground = new SFMLStaticImageBackground(ptrWindow, bgfilename);
     }
 
     /*virtual void Update() override
@@ -165,6 +225,11 @@ class SFMLScena: public Scena
     {
         if(ptrWindow != nullptr)
         {
+            if(pBackground != nullptr)
+            {
+                pBackground->Draw();
+            }
+
             Scena::Draw();
         }
     }

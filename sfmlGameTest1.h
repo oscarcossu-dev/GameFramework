@@ -29,7 +29,7 @@ class SFMLGOPlayer : public SFMLGameObject
 
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right))
         {  
-            if(x + delta_movement < HEIGHT) 
+            if(x + delta_movement + this->width < WIDTH) 
             x += delta_movement;
         }
     }
@@ -73,8 +73,8 @@ class SFMLGOEnemy : public SFMLGameObject
         shape->setFillColor(sf::Color::Red);
         _pDrawable = shape;
         _pTransformable = shape;
-        int rand = random() % 10;
-        if(!(rand % 2))
+        int rand_num = rand() % 10;
+        if(!(rand_num % 2))
             direction = -1;
         width = shape->getSize().x;
         height = shape->getSize().y;
@@ -222,6 +222,7 @@ class SFMLGameTest1 : public SFMLGame
 
         delete pScena;
         pScena = new SFMLGameTest1Scena(pWindow);
+        pScena->SetupBackground("bg.jpg");
 
         //sf::CircleShape *shape = new sf::CircleShape(100.f);
         //shape->setFillColor(sf::Color::Green);
