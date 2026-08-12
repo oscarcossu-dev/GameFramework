@@ -1,3 +1,6 @@
+#ifndef OSK_SCENA_CPP
+#define OSK_SCENA_CPP
+
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <string>
@@ -234,3 +237,5 @@ class SFMLScena: public Scena
         }
     }
 };
+
+#endif
