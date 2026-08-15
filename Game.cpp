@@ -29,8 +29,8 @@ class SFMLGame : public Game
     protected:
     
     SFMLScena *pScena = nullptr;
-    sf::Thread thread;
-    sf::Mutex mutex;
+    // sf::Thread thread;
+    // sf::Mutex mutex;
     bool _Initialized = false;
     bool _ThreadStarted = false;
     bool _Running = true;
@@ -42,7 +42,7 @@ class SFMLGame : public Game
 
 
     SFMLGame(int w = 800, int h=600)
-    :thread(&SFMLGame::PopEvent, this)
+    // :thread(&SFMLGame::PopEvent, this)
     {
         Width = w;
         Height = h;
@@ -50,11 +50,11 @@ class SFMLGame : public Game
 
     virtual ~SFMLGame()
     {
-        if(_ThreadStarted)
-        {
-            _ThreadStarted = false;
-            thread.terminate();
-        }
+        // if(_ThreadStarted)
+        // {
+        //     _ThreadStarted = false;
+        //     thread.terminate();
+        // }
 
         if(_Initialized)
         {
@@ -81,30 +81,34 @@ class SFMLGame : public Game
         _Running = true;
         while (pWindow->isOpen())
         {
-            if(!_ThreadStarted)
-            {
-                _ThreadStarted = true;
-                thread.launch();
-            }
+            // if(!_ThreadStarted)
+            // {
+            //     _ThreadStarted = true;
+            //     thread.launch();
+            // }
 
-            //UpdateDrawThread();
-            // sf::Event event;
-            /*mutex.lock();
+            //mutex.lock();
+            sf::Event event;
             while (pWindow->pollEvent(event))
             {
-               ManageEvent(event);
+                if(event.type == sf::Event::Closed)
+                {
+                    _Running = false;
+                    pWindow->close();
+                }
+                ManageEvent(event);
             }
-            mutex.unlock();*/
+            //mutex.unlock();
             if(_Running)
             {
-                mutex.lock();
+                // mutex.lock();
                 pScena->Update();
                 pWindow->clear();
                 pScena->Draw();
                 pWindow->display();
-                mutex.unlock();
+                // mutex.unlock();
             }
-            sf::sleep(sf::milliseconds(_threadWait));
+            //sf::sleep(sf::milliseconds(_threadWait));
         }
     }
 
@@ -129,11 +133,11 @@ class SFMLGame : public Game
         {
             if (event.type == sf::Event::Closed)
             {
-                mutex.lock();
+                // mutex.lock();
                 _ThreadStarted = false;
-                thread.terminate();
+                // thread.terminate();
                 pWindow->close();
-                mutex.unlock();
+                // mutex.unlock();
                 return;
             }
                     
@@ -146,11 +150,10 @@ class SFMLGame : public Game
                         _ThreadStarted = false;
                         _Running = false;
                         
-                        mutex.lock();
+                        // mutex.lock();
                         pWindow->close();
-                        mutex.unlock();
-
-                        thread.terminate();
+                        // mutex.unlock();
+                        // thread.terminate();
                     break;
                     
                     default:
@@ -165,12 +168,12 @@ class SFMLGame : public Game
     {
         while(_ThreadStarted && _Running)
         {
-            mutex.lock();
+            // mutex.lock();
             pScena->Update();
             pWindow->clear();
             pScena->Draw();
             pWindow->display();
-            mutex.unlock();
+            // mutex.unlock();
             sf::sleep(sf::milliseconds(_threadWait));
         }
     }

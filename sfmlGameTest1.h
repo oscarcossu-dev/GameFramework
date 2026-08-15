@@ -14,7 +14,7 @@ class SFMLGOPlayer : public SFMLGameObject
     SFMLGOPlayer(sf::RenderWindow *rw):SFMLGameObject(rw)
     {
         auto *pshape = new sf::RectangleShape(sf::Vector2f(20, 5));
-        pshape->setFillColor(sf::Color::Blue);
+        pshape->setFillColor(sf::Color::Yellow);
         _pDrawable = pshape;
         _pTransformable = pshape;
         width = pshape->getSize().x;
@@ -65,13 +65,14 @@ class SFMLGOBullet : public SFMLGameObject
     }
 };
 
-class SFMLGOEnemy : public SFMLGameObject
+//class SFMLGOEnemy : public SFMLGameObject
+class SFMLGOEnemy : public SFMLAnimatedGameObject
 {
     int xr = 0,xl = 0;
     int direction = 1;
     public:
 
-    SFMLGOEnemy(sf::RenderWindow *rw):SFMLGameObject(rw)
+    /*SFMLGOEnemy(sf::RenderWindow *rw):SFMLGameObject(rw)
     {
         auto *shape = new sf::RectangleShape(sf::Vector2f(40,40));
         shape->setFillColor(sf::Color::Red);
@@ -82,6 +83,15 @@ class SFMLGOEnemy : public SFMLGameObject
             direction = -1;
         width = shape->getSize().x;
         height = shape->getSize().y;
+    }*/
+
+    SFMLGOEnemy(sf::RenderWindow *rw, sf::IntRect  rect , std::string texturename, int frameAnimationStart, int frameAnimationEnd):SFMLAnimatedGameObject(rw,rect,texturename,frameAnimationStart,frameAnimationEnd)  
+    {
+        int rand_num = rand() % 10;
+        if(!(rand_num % 2))
+            direction = -1;
+        width = rect.width;
+        height = rect.height;
     }
 
 
@@ -256,11 +266,16 @@ class SFMLGameTest1 : public SFMLGame
         // auto test = new SFMLGOBullet(pWindow);
         // test->SetPosition(400,300);
         // pScena->AddGameObject(test);
+        int rand_num = 1;
         int distanza = 100;
         for(int i = 0; i < 3; i++)
             for(int j = 0; j < 7; j++)
             {
-                auto test = new SFMLGOEnemy(pWindow);
+                //auto test = new SFMLGOEnemy(pWindow);
+                std::string filename =  "Spider0"+std::to_string(rand_num)+".png";
+                std::cout<<filename;
+                auto test = new SFMLGOEnemy(pWindow, sf::IntRect(0,0,64,64), filename ,0,9);
+                rand_num = rand() % 3 + 1;
                 test->SetPosition(j*distanza + distanza, i*distanza + distanza);
                 ((SFMLGameTest1Scena*)pScena)->AddEnemy(test);
             }

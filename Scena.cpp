@@ -130,16 +130,13 @@ class SFMLGameObject : public GameObject
 
     public:
 
-    SFMLGameObject(sf::RenderWindow *rw, sf::Drawable *d = nullptr, sf::Transformable *t = nullptr)
+    SFMLGameObject(sf::RenderWindow *rw, sf::Drawable *d = nullptr, sf::Transformable *t = nullptr) 
+    : _pRW {rw} , _pDrawable {d}, _pTransformable {t}
     {
         if(rw == nullptr)
         {
             throw std::runtime_error("Manca la RenderWindow");
         }
-        _pRW = rw;
-        _pDrawable = d;
-        _pTransformable = t;
-        
     }
 
     virtual void Update() override
@@ -154,6 +151,51 @@ class SFMLGameObject : public GameObject
             _pRW->draw((*_pDrawable));
         }
     }
+};
+
+
+
+class SFMLAnimatedGameObject : public SFMLGameObject
+{
+    protected:
+    int _numFrameAnimation = 0;
+    int _frameAnimationStart = 0;
+    int _frameAnimationEnd = 0;
+    int _currentFrame = 0;
+    sf::IntRect _rect;
+    sf::Texture* _pTexture;
+    sf::Sprite* _sprite;
+
+    public:
+    
+    SFMLAnimatedGameObject(sf::RenderWindow *rw, sf::IntRect  rect , std::string texturename, int frameAnimationStart, int frameAnimationEnd)
+    :   SFMLGameObject(rw, nullptr, nullptr),
+        _numFrameAnimation {frameAnimationEnd - frameAnimationStart},
+        _frameAnimationStart {frameAnimationStart},
+        _frameAnimationEnd {frameAnimationEnd},
+        _currentFrame {-1},
+        _rect {rect},
+        _pTexture {new sf::Texture()}
+    {
+        _pTexture->loadFromFile(texturename);
+        _sprite = new sf::Sprite(*_pTexture, rect);
+        _pTransformable = _sprite;
+        _pDrawable = _sprite;
+    }
+
+    virtual void Draw() override
+    {
+        _currentFrame++;
+        if(_currentFrame > _numFrameAnimation)
+        {
+            _currentFrame = 0;
+        }
+
+        _rect.left = _frameAnimationStart + (_rect.width * _currentFrame);
+        _sprite->setTextureRect(_rect);
+        SFMLGameObject::Draw();
+    }
+
 };
 
 
