@@ -97,27 +97,59 @@ class SFMLGOEnemy : public SFMLAnimatedGameObject
 
     virtual void Update() override
     {
-        if(xr==0)
+        if(enabled)
         {
-            xr = x + 10;
-            xl = x -10;
-        }
+            if(xr==0)
+            {
+                xr = x + 10;
+                xl = x -10;
+            }
 
-        if(direction > 0 )
-        {
-            if(x < xr)
-                x++;
-            else
-                direction = -1;
+            if(direction > 0 )
+            {
+                if(x < xr)
+                    x++;
+                else
+                    direction = -1;
+            }
+            else if(direction < 0)
+            {
+                if(x > xl)
+                    x--;
+                else
+                    direction = 1;
+            }
+            SFMLGameObject::Update();
         }
-        else if(direction < 0)
+    }
+};
+
+
+
+class SFMLExplosion : public SFMLAnimatedGameObject
+{
+    int xr = 0,xl = 0;
+
+    public:
+
+    SFMLExplosion(sf::RenderWindow *rw, sf::IntRect  rect , std::string texturename, int frameAnimationStart, int frameAnimationEnd)
+    :SFMLAnimatedGameObject(rw,rect,texturename,frameAnimationStart,frameAnimationEnd, false)  
+    {
+        width = rect.width;
+        height = rect.height;
+    }
+
+
+    virtual void Update() override
+    {
+        if(enabled)
         {
-            if(x > xl)
-                x--;
-            else
-                direction = 1;
+            SFMLGameObject::Update();
+            if( _currentFrame >= _numFrameAnimation)
+            {
+                enabled = false;
+            }
         }
-        SFMLGameObject::Update();
     }
 };
 
@@ -125,7 +157,7 @@ class SFMLGOEnemy : public SFMLAnimatedGameObject
 class SFMLGameTest1Scena : public SFMLScena
 {
     std::vector<SFMLGOBullet*> _bullets;
-    std::vector<SFMLGOEnemy*> _enemies;
+    std::vector<SFMLGameObject*> _enemies;
     std::chrono::steady_clock::time_point  _tLastBulletShot = std::chrono::steady_clock::now();
     const int _tDeltaBullets = 250;
 
@@ -139,14 +171,14 @@ class SFMLGameTest1Scena : public SFMLScena
 
         if( std::chrono::duration_cast<std::chrono::milliseconds>(now - _tLastBulletShot).count() > _tDeltaBullets)
         {
-            SFMLGOBullet *p = new SFMLGOBullet(ptrWindow);
+            auto p = new SFMLGOBullet(ptrWindow);
             p->SetPosition(x,y);
             _bullets.push_back(p);
             _tLastBulletShot = now;
         }
     }
 
-    void AddEnemy(SFMLGOEnemy *pObj)
+    void AddEnemy(SFMLGameObject *pObj)
     {
         if(pObj != nullptr)
         {
@@ -158,31 +190,47 @@ class SFMLGameTest1Scena : public SFMLScena
     {
         SFMLScena::Update();
         int i = 0;
+
+        for(auto go = _enemies.begin(); go != _enemies.end();)//controllo la collisione del proiettile con i nemici
+        {
+            if((*go)->GetEnabled() == false)
+            {
+                _enemies.erase(go);
+            }
+            else
+                go++;
+        }
+
         for(auto elem = _bullets.begin(); elem != _bullets.end();)
         {
-            auto p = *elem;
+            auto pBullet = *elem;
             i++;
-            if(p->GetY() < 0)//il proiettile va oltre il bordo superiore dello schermo
+            if(pBullet->GetY() < 0)//il proiettile va oltre il bordo superiore dello schermo
             {
+                pBullet->SetEnabled(false);
                 _bullets.erase(elem);
-                delete p;
+                delete pBullet;
             }
             else 
             {
                 for(auto go = _enemies.begin(); go != _enemies.end();go++)//controllo la collisione del proiettile con i nemici
                 {
-                    if((*go)->GetEnabled() && Collider::DetectCollision(p,(*go)))
+                    if((*go)->GetEnabled() && Collider::DetectCollision(pBullet,*go))
                     {
+                        SFMLExplosion *explosion = new SFMLExplosion(ptrWindow, sf::IntRect(90,10, 34,34), "M484ExplosionSet1.png",0,7);
+                        explosion->SetPosition((*go)->GetX() + 10,(*go)->GetY()+10);
+                         AddEnemy(explosion);
+
                         (*go)->SetEnabled(false);
                         _bullets.erase(elem);
-                        delete p;
-                        p = nullptr;
+                        delete pBullet;
+                        pBullet = nullptr;
                         break;
                     }
                 }
-                if(p != nullptr) 
+                if(pBullet != nullptr) 
                 {
-                    p->Update();
+                    pBullet->Update();
                     elem++;
                 }
             }
@@ -279,6 +327,10 @@ class SFMLGameTest1 : public SFMLGame
                 test->SetPosition(j*distanza + distanza, i*distanza + distanza);
                 ((SFMLGameTest1Scena*)pScena)->AddEnemy(test);
             }
+        
+        auto explosion = new SFMLExplosion(pWindow, sf::IntRect(90,10, 34,34), "M484ExplosionSet1.png",0,7);
+        explosion->SetPosition(30,30);
+        ((SFMLGameTest1Scena*)pScena)->AddEnemy(explosion);
     }
 
     virtual void ManageEvent(sf::Event event) override

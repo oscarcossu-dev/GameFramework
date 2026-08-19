@@ -29,12 +29,13 @@ class SFMLGame : public Game
     protected:
     
     SFMLScena *pScena = nullptr;
-    // sf::Thread thread;
+    //sf::Thread thread;
     // sf::Mutex mutex;
     bool _Initialized = false;
     bool _ThreadStarted = false;
     bool _Running = true;
     int _threadWait = 1000 / 60;
+    int _fps = 30;
 
     public: 
     int Width, Height;
@@ -42,10 +43,9 @@ class SFMLGame : public Game
 
 
     SFMLGame(int w = 800, int h=600)
-    // :thread(&SFMLGame::PopEvent, this)
+    : Width {w} , Height {h}
+    // ,thread(&SFMLGame::PopEvent, this)
     {
-        Width = w;
-        Height = h;
     }
 
     virtual ~SFMLGame()
@@ -66,7 +66,7 @@ class SFMLGame : public Game
     virtual void Init() override
     {
         pWindow = new sf::RenderWindow(sf::VideoMode(Width, Height), "SFML_window");
-        pWindow->setFramerateLimit(60);
+        pWindow->setFramerateLimit(_fps);
         pScena = new SFMLScena(pWindow);
         _Initialized = true;
     }
@@ -122,7 +122,7 @@ class SFMLGame : public Game
             {
                 ManageEvent(event);
             }
-            sf::sleep(sf::milliseconds(_threadWait / 4));
+            //sf::sleep(sf::milliseconds(_threadWait / 4));
         }
     }
 

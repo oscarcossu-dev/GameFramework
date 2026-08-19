@@ -162,20 +162,26 @@ class SFMLAnimatedGameObject : public SFMLGameObject
     int _frameAnimationStart = 0;
     int _frameAnimationEnd = 0;
     int _currentFrame = 0;
-    sf::IntRect _rect;
+    int _texturex = 0;
+    int _texturey = 0;
+    bool _repeat = true;
+    sf::IntRect _textureRect;
     sf::Texture* _pTexture;
     sf::Sprite* _sprite;
 
     public:
-    
-    SFMLAnimatedGameObject(sf::RenderWindow *rw, sf::IntRect  rect , std::string texturename, int frameAnimationStart, int frameAnimationEnd)
+
+    SFMLAnimatedGameObject(sf::RenderWindow *rw, sf::IntRect  rect , std::string texturename, int frameAnimationStart, int frameAnimationEnd, bool repeat = true)
     :   SFMLGameObject(rw, nullptr, nullptr),
         _numFrameAnimation {frameAnimationEnd - frameAnimationStart},
         _frameAnimationStart {frameAnimationStart},
         _frameAnimationEnd {frameAnimationEnd},
-        _currentFrame {-1},
-        _rect {rect},
-        _pTexture {new sf::Texture()}
+        _currentFrame {0},
+        _textureRect {rect},
+        _repeat {repeat},
+        _pTexture {new sf::Texture()},
+        _texturex {rect.left},
+        _texturey {rect.top}
     {
         _pTexture->loadFromFile(texturename);
         _sprite = new sf::Sprite(*_pTexture, rect);
@@ -185,15 +191,21 @@ class SFMLAnimatedGameObject : public SFMLGameObject
 
     virtual void Draw() override
     {
-        _currentFrame++;
-        if(_currentFrame > _numFrameAnimation)
-        {
-            _currentFrame = 0;
-        }
+        if(enabled)
+        { 
+            _textureRect.left = _texturex + (_textureRect.width * _currentFrame);
+            _sprite->setTextureRect(_textureRect);
+            SFMLGameObject::Draw();
 
-        _rect.left = _frameAnimationStart + (_rect.width * _currentFrame);
-        _sprite->setTextureRect(_rect);
-        SFMLGameObject::Draw();
+            if(_currentFrame <= _numFrameAnimation )
+                _currentFrame++;
+            
+
+            if(_repeat && _currentFrame > _numFrameAnimation)
+            {
+                _currentFrame = 0;
+            }
+        }
     }
 
 };
@@ -209,8 +221,8 @@ class SFMLStaticImageBackground : public IBackground
 
     public:
     SFMLStaticImageBackground(sf::RenderWindow *rw, std::string texturename)
+    : _pRW { rw}
     {
-        _pRW = rw;
         sf::Texture* _pTexture = new sf::Texture();
         _pTexture->loadFromFile(texturename);
         auto sprite = new sf::Sprite(*_pTexture);
