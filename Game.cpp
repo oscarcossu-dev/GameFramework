@@ -28,7 +28,7 @@ class SFMLGame : public Game
 {
     protected:
     
-    SFMLScena *pScena = nullptr;
+    //SFMLScena *pScena = nullptr;
     //sf::Thread thread;
     // sf::Mutex mutex;
     bool _Initialized = false;
@@ -58,23 +58,29 @@ class SFMLGame : public Game
 
         if(_Initialized)
         {
-            delete pWindow;
-            pWindow = nullptr;
+            Cleanup();
         }
+    }
+
+    void Cleanup()
+    {
+        //delete pScena;
+        delete pWindow;
+        pWindow = nullptr;
     }
 
     virtual void Init() override
     {
         pWindow = new sf::RenderWindow(sf::VideoMode(Width, Height), "SFML_window");
         pWindow->setFramerateLimit(_fps);
-        pScena = new SFMLScena(pWindow);
+        _pScena = new SFMLScena(pWindow);
         _Initialized = true;
     }
 
     virtual void Loop() override
     {
 
-        if(pWindow == nullptr || pScena == nullptr)
+        if(pWindow == nullptr || _pScena == nullptr)
             return;
 
         // The Game Loop
@@ -91,20 +97,15 @@ class SFMLGame : public Game
             sf::Event event;
             while (pWindow->pollEvent(event))
             {
-                if(event.type == sf::Event::Closed)
-                {
-                    _Running = false;
-                    pWindow->close();
-                }
                 ManageEvent(event);
             }
             //mutex.unlock();
             if(_Running)
             {
                 // mutex.lock();
-                pScena->Update();
+                _pScena->Update();
                 pWindow->clear();
-                pScena->Draw();
+                _pScena->Draw();
                 pWindow->display();
                 // mutex.unlock();
             }
@@ -133,6 +134,7 @@ class SFMLGame : public Game
         {
             if (event.type == sf::Event::Closed)
             {
+                _Running = false;
                 // mutex.lock();
                 _ThreadStarted = false;
                 // thread.terminate();
@@ -169,9 +171,9 @@ class SFMLGame : public Game
         while(_ThreadStarted && _Running)
         {
             // mutex.lock();
-            pScena->Update();
+            _pScena->Update();
             pWindow->clear();
-            pScena->Draw();
+            _pScena->Draw();
             pWindow->display();
             // mutex.unlock();
             sf::sleep(sf::milliseconds(_threadWait));

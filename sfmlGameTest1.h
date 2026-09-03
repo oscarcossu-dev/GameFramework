@@ -156,8 +156,8 @@ class SFMLExplosion : public SFMLAnimatedGameObject
 
 class SFMLGameTest1Scena : public SFMLScena
 {
-    std::vector<SFMLGOBullet*> _bullets;
-    std::vector<SFMLGameObject*> _enemies;
+    std::vector<GameObject*> _bullets;
+    std::vector<GameObject*> _enemies;
     std::chrono::steady_clock::time_point  _tLastBulletShot = std::chrono::steady_clock::now();
     const int _tDeltaBullets = 250;
 
@@ -195,7 +195,7 @@ class SFMLGameTest1Scena : public SFMLScena
         {
             if((*go)->GetEnabled() == false)
             {
-                _enemies.erase(go);
+                go = _enemies.erase(go);
             }
             else
                 go++;
@@ -208,11 +208,12 @@ class SFMLGameTest1Scena : public SFMLScena
             if(pBullet->GetY() < 0)//il proiettile va oltre il bordo superiore dello schermo
             {
                 pBullet->SetEnabled(false);
-                _bullets.erase(elem);
+                elem = _bullets.erase(elem);
                 delete pBullet;
             }
             else 
             {
+                bool hit = false;
                 for(auto go = _enemies.begin(); go != _enemies.end();go++)//controllo la collisione del proiettile con i nemici
                 {
                     if((*go)->GetEnabled() && Collider::DetectCollision(pBullet,*go))
@@ -222,13 +223,20 @@ class SFMLGameTest1Scena : public SFMLScena
                          AddEnemy(explosion);
 
                         (*go)->SetEnabled(false);
-                        _bullets.erase(elem);
-                        delete pBullet;
-                        pBullet = nullptr;
+                        // elem = _bullets.erase(elem);
+                        // delete pBullet;
+                        // pBullet = nullptr;
+                        hit = true;
                         break;
                     }
                 }
-                if(pBullet != nullptr) 
+                if(hit) 
+                {
+                    elem = _bullets.erase(elem);
+                    delete pBullet;
+                    pBullet = nullptr;
+                }
+                else
                 {
                     pBullet->Update();
                     elem++;
@@ -236,7 +244,7 @@ class SFMLGameTest1Scena : public SFMLScena
             }
         }
         std::cout<<"Bullets count:"<<i<<std::endl;
-        for(auto enemy : _enemies)
+        for(auto& enemy : _enemies)
         {
             if(enemy->GetEnabled())
                 enemy->Update();
@@ -292,9 +300,9 @@ class SFMLGameTest1 : public SFMLGame
     {
         SFMLGame::Init();
 
-        delete pScena;
-        pScena = new SFMLGameTest1Scena(pWindow);
-        pScena->SetupBackground("bg.jpg");
+        delete _pScena;
+        _pScena = new SFMLGameTest1Scena(pWindow);
+        ((SFMLScena*)_pScena)->SetupBackground("bg.jpg");
 
         //sf::CircleShape *shape = new sf::CircleShape(100.f);
         //shape->setFillColor(sf::Color::Green);
@@ -309,7 +317,7 @@ class SFMLGameTest1 : public SFMLGame
         
         pPlayer = new SFMLGOPlayer(pWindow);
         pPlayer->SetPosition(390, 550);
-        pScena->AddGameObject(pPlayer);
+        _pScena->AddGameObject(pPlayer);
 
         // auto test = new SFMLGOBullet(pWindow);
         // test->SetPosition(400,300);
@@ -325,12 +333,12 @@ class SFMLGameTest1 : public SFMLGame
                 auto test = new SFMLGOEnemy(pWindow, sf::IntRect(0,0,64,64), filename ,0,9);
                 rand_num = rand() % 3 + 1;
                 test->SetPosition(j*distanza + distanza, i*distanza + distanza);
-                ((SFMLGameTest1Scena*)pScena)->AddEnemy(test);
+                ((SFMLGameTest1Scena*)_pScena)->AddEnemy(test);
             }
         
         auto explosion = new SFMLExplosion(pWindow, sf::IntRect(90,10, 34,34), "M484ExplosionSet1.png",0,7);
         explosion->SetPosition(30,30);
-        ((SFMLGameTest1Scena*)pScena)->AddEnemy(explosion);
+        ((SFMLGameTest1Scena*)_pScena)->AddEnemy(explosion);
     }
 
     virtual void ManageEvent(sf::Event event) override
@@ -342,7 +350,7 @@ class SFMLGameTest1 : public SFMLGame
         //if(event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space)
         //if(event.key.code == sf::Keyboard::Space)
         {
-            ((SFMLGameTest1Scena*)pScena)->AddBullet(pPlayer->GetX()+20, pPlayer->GetY());
+            ((SFMLGameTest1Scena*)_pScena)->AddBullet(pPlayer->GetX()+20, pPlayer->GetY());
         }
     }
 };
