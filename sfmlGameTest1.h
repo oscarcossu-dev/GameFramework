@@ -171,7 +171,7 @@ class SFMLGameTest1Scena : public SFMLScena
 
         if( std::chrono::duration_cast<std::chrono::milliseconds>(now - _tLastBulletShot).count() > _tDeltaBullets)
         {
-            auto p = new SFMLGOBullet(ptrWindow);
+            auto p = new SFMLGOBullet(_ptrWindow);
             p->SetPosition(x,y);
             _bullets.push_back(p);
             _tLastBulletShot = now;
@@ -218,7 +218,7 @@ class SFMLGameTest1Scena : public SFMLScena
                 {
                     if((*go)->GetEnabled() && Collider::DetectCollision(pBullet,*go))
                     {
-                        SFMLExplosion *explosion = new SFMLExplosion(ptrWindow, sf::IntRect(90,10, 34,34), "M484ExplosionSet1.png",0,7);
+                        SFMLExplosion *explosion = new SFMLExplosion(_ptrWindow, sf::IntRect(90,10, 34,34), "M484ExplosionSet1.png",0,7);
                         explosion->SetPosition((*go)->GetX() + 10,(*go)->GetY()+10);
                          AddEnemy(explosion);
 

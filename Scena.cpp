@@ -97,7 +97,7 @@ class Scena
                       p++;
                 }
                 else
-                _gameObjects.erase(p);
+                    p = _gameObjects.erase(p);
             }
         }
     };
@@ -124,9 +124,9 @@ class Scena
 class SFMLGameObject : public GameObject
 {
     protected:
-    sf::Drawable *_pDrawable;
-    sf::Transformable *_pTransformable;
-    sf::RenderWindow *_pRW;
+    sf::Drawable *_pDrawable = nullptr;
+    sf::Transformable *_pTransformable = nullptr;
+    sf::RenderWindow *_pRW = nullptr;
 
     public:
 
@@ -246,9 +246,9 @@ class SFMLStaticImageBackground : public IBackground
 
     ~SFMLStaticImageBackground()
     {
-        delete _pDrawable;
-        delete _pTransformable;
-        delete _pTexture;
+        if(_pDrawable) delete _pDrawable;
+        if(_pTransformable) delete _pTransformable;
+        if(_pTexture) delete _pTexture;
     }
 };
 
@@ -259,19 +259,20 @@ class SFMLStaticImageBackground : public IBackground
 class SFMLScena: public Scena
 {
     protected:
-    sf::RenderWindow *ptrWindow;
-    IBackground *pBackground;
+    sf::RenderWindow *_ptrWindow = nullptr;
+    IBackground *_pBackground = nullptr;
     
     public: 
 
     SFMLScena(sf::RenderWindow *pWindow)
     {
-        ptrWindow = pWindow;
+        _ptrWindow = pWindow;
     }
 
     void SetupBackground(std::string bgfilename)
     {
-        pBackground = new SFMLStaticImageBackground(ptrWindow, bgfilename);
+        if( _pBackground) delete _pBackground;
+        _pBackground = new SFMLStaticImageBackground(_ptrWindow, bgfilename);
     }
 
     /*virtual void Update() override
@@ -280,11 +281,11 @@ class SFMLScena: public Scena
 
     virtual void Draw() override
     {
-        if(ptrWindow != nullptr)
+        if(_ptrWindow != nullptr)
         {
-            if(pBackground != nullptr)
+            if(_pBackground != nullptr)
             {
-                pBackground->Draw();
+                _pBackground->Draw();
             }
 
             Scena::Draw();
