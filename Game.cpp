@@ -11,7 +11,9 @@ class Game
     Scena *_pScena = nullptr;
 
     public:
-
+    int Width, Height;
+    
+    Game(int w, int h): Width(w), Height(h) {};
     virtual void Init() = 0;
     virtual void Loop() = 0;
     virtual ~Game()
@@ -23,7 +25,7 @@ class Game
         }
     }
 };
-
+/*
 class SFMLGame : public Game
 {
     protected:
@@ -180,5 +182,5 @@ class SFMLGame : public Game
         }
     }
 };
-
+*/
 #endif

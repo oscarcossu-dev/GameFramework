@@ -1,5 +1,5 @@
 #include <vector>
-#include "Game.cpp"
+#include "SFMLGame.h"
 #include <cstdlib>
 #include <iostream>
 #include <chrono>
