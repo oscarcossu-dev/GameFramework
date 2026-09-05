@@ -1,6 +1,5 @@
 #include "SFMLGame.h"
-
-
+#include "SFMLScena.h"
 // Costruttore
 SFMLGame::SFMLGame(int w, int h) : Game(w,h)
 {

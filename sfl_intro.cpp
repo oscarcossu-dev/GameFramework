@@ -56,6 +56,6 @@ int main()
     SFMLGameTest1 game;
     game.Init();
     game.Loop();
-
+    
     return 0;
 }

@@ -1,8 +1,13 @@
-#include <vector>
+#ifndef SFML_GAMETEST_1
+#define SFML_GAMETEST_1
+
 #include "SFMLGame.h"
+#include "SFMLScena.h"
+#include <vector>
 #include <cstdlib>
 #include <iostream>
 #include <chrono>
+
 
 
 class SFMLGOPlayer : public SFMLGameObject
@@ -354,3 +359,5 @@ class SFMLGameTest1 : public SFMLGame
         }
     }
 };
+
+#endif
