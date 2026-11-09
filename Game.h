@@ -1,7 +1,7 @@
-#ifndef OSK_GAME_CPP
-#define OSK_GAME_CPP
+#ifndef OSK_GAME_H
+#define OSK_GAME_H
 
-#include "Scena.cpp"
+#include "Scena.h"
 #include <SFML/Window/Keyboard.hpp>
 #include <SFML/System.hpp>
 

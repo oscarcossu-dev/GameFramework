@@ -1,7 +1,7 @@
 #ifndef SFML_GAMEOBJECT_H
 #define SFML_GAMEOBJECT_H
 
-#include "Scena.cpp"
+#include "Scena.h"
 #include <SFML/Graphics.hpp>
 
 
@@ -38,8 +38,6 @@ class SFMLGameObject : public GameObject
         }
     }
 };
-
-
 
 class SFMLAnimatedGameObject : public SFMLGameObject
 {
