@@ -25,6 +25,7 @@ class Scena
     protected:
     const int _maxNumObject = 100;
     std::vector<GameObject*> _gameObjects;
+    IBackground *_pBackground = nullptr;
 
     public:
     virtual void AddGameObject(GameObject *pGame)
@@ -32,6 +33,12 @@ class Scena
         _gameObjects.push_back(pGame);
     }
     
+    virtual void SetupBackground(std::string bgfilename)
+    {
+        if( _pBackground) delete _pBackground;
+    }
+
+
     virtual void Update()
     {
         if( _gameObjects.size() > 0)

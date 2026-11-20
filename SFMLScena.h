@@ -20,7 +20,7 @@ class SFMLScena: public Scena
 
     void SetupBackground(std::string bgfilename)
     {
-        if( _pBackground) delete _pBackground;
+        Scena::SetupBackground(bgfilename);
         _pBackground = new SFMLStaticImageBackground(_ptrWindow, bgfilename);
     }
 
