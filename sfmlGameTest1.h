@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <chrono>
+#include <string>
 
 
 
@@ -165,25 +166,37 @@ class SFMLGameTest1Scena : public SFMLScena
     std::vector<GameObject*> _enemies;
     std::chrono::steady_clock::time_point  _tLastBulletShot = std::chrono::steady_clock::now();
     const int _tDeltaBullets = 250;
+    unsigned int _bulletRemaining = 10;
+    SFMLGameObject *_hud;
+    sf::Text *_textForHud;
+    sf::Font font;
 
     public:
     SFMLGameTest1Scena(sf::RenderWindow *window) : SFMLScena(window)
-    {}
+    {
+        bool res = font.loadFromFile("airstrike.ttf");
+        _textForHud = new sf::Text("Hello SFML", font,30);
+        _textForHud->setPosition(20, 20);
+        _textForHud->setColor(sf::Color::Yellow);
+        _hud = new SFMLGameObject(_ptrWindow, _textForHud, _textForHud);
+        _hud->SetEnabled(true);
+    }
 
     void AddBullet(int x, int y)
     {
         std::chrono::steady_clock::time_point  now = std::chrono::steady_clock::now();
 
-        if( std::chrono::duration_cast<std::chrono::milliseconds>(now - _tLastBulletShot).count() > _tDeltaBullets)
+        if(_bulletRemaining >0 && std::chrono::duration_cast<std::chrono::milliseconds>(now - _tLastBulletShot).count() > _tDeltaBullets)
         {
             auto p = new SFMLGOBullet(_ptrWindow);
             p->SetPosition(x,y);
             _bullets.push_back(p);
             _tLastBulletShot = now;
+            _bulletRemaining--;
         }
     }
 
-    void AddEnemy(SFMLGameObject *pObj)
+    void AddEnemy(GameObject *pObj)
     {
         if(pObj != nullptr)
         {
@@ -240,6 +253,7 @@ class SFMLGameTest1Scena : public SFMLScena
                     elem = _bullets.erase(elem);
                     delete pBullet;
                     pBullet = nullptr;
+                    _bulletRemaining += 2;
                 }
                 else
                 {
@@ -259,6 +273,7 @@ class SFMLGameTest1Scena : public SFMLScena
     virtual void Draw() override{
 
         SFMLScena::Draw();
+
         if(_bullets.size() > 0)
         {
             for(auto bullet : _bullets)
@@ -276,6 +291,8 @@ class SFMLGameTest1Scena : public SFMLScena
                     enemy->Draw();
             }
         }
+        _textForHud->setString("Bullet: "+ std::to_string(_bulletRemaining));
+        _hud->Draw();
     };
 };
 
@@ -307,7 +324,7 @@ class SFMLGameTest1 : public SFMLGame
 
         delete _pScena;
         _pScena = new SFMLGameTest1Scena(pWindow);
-        ((SFMLScena*)_pScena)->SetupBackground("bg.jpg");
+        (_pScena)->SetupBackground("bg.jpg");
 
         //sf::CircleShape *shape = new sf::CircleShape(100.f);
         //shape->setFillColor(sf::Color::Green);
