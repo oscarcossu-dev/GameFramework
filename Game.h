@@ -12,8 +12,11 @@ class Game
 
     public:
     int Width, Height;
+    GameState State;
     
-    Game(int w, int h): Width(w), Height(h) {};
+
+    Game(int w, int h): Width(w), Height(h), State(GameState::Play) {};
+    
     virtual void Init() = 0;
     virtual void Loop() = 0;
     virtual ~Game()

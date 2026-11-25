@@ -1,5 +1,6 @@
 #include "SFMLGame.h"
 #include "SFMLScena.h"
+
 // Costruttore
 SFMLGame::SFMLGame(int w, int h) : Game(w,h)
 {
@@ -18,12 +19,15 @@ void SFMLGame::Init()
     pWindow = new sf::RenderWindow(sf::VideoMode(Width, Height), "SFML_window");
     pWindow->setFramerateLimit(_fps);
     _pScena = new SFMLScena(pWindow);
+    bool res = font.loadFromFile("airstrike.ttf");
+    _textForHud = new sf::Text("Game over", font,30);
+    _textForHud->setPosition(Width/2 - 100, Height/2);
+    _textForHud->setColor(sf::Color::Yellow);
     _Initialized = true;
 }
 
 void SFMLGame::Loop()
 {
-
     if(pWindow == nullptr || _pScena == nullptr)
         return;
 
@@ -47,9 +51,18 @@ void SFMLGame::Loop()
         if(_Running)
         {
             // mutex.lock();
-            _pScena->Update();
+            State = _pScena->Update();
             pWindow->clear();
             _pScena->Draw();
+
+            if(State == GameState::End)
+            {
+                _textForHud->setString("You Win");   
+            }
+            
+            if(State != GameState::Play)
+                pWindow->draw( (*_textForHud));
+
             pWindow->display();
             // mutex.unlock();
         }

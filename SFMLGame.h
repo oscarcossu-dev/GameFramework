@@ -18,6 +18,8 @@ class SFMLGame : public Game
         int _threadWait = 1000 / 60;
         int _fps = 30;
         sf::RenderWindow *pWindow = nullptr;
+        sf::Text *_textForHud;
+        sf::Font font;
 
     public:
         SFMLGame(int w, int h);

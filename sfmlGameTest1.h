@@ -170,7 +170,7 @@ class SFMLGameTest1Scena : public SFMLScena
     SFMLGameObject *_hud;
     sf::Text *_textForHud;
     sf::Font font;
-
+    GameState State = GameState::Play;
     public:
     SFMLGameTest1Scena(sf::RenderWindow *window) : SFMLScena(window)
     {
@@ -204,10 +204,12 @@ class SFMLGameTest1Scena : public SFMLScena
         }
     }
 
-    virtual void Update() override
+    virtual GameState Update() override
     {
+        
         SFMLScena::Update();
-        int i = 0;
+        int bullet_counter = 0;
+        int enemy_counter = 0;
 
         for(auto go = _enemies.begin(); go != _enemies.end();)//controllo la collisione del proiettile con i nemici
         {
@@ -218,11 +220,11 @@ class SFMLGameTest1Scena : public SFMLScena
             else
                 go++;
         }
-
+        
         for(auto elem = _bullets.begin(); elem != _bullets.end();)
         {
             auto pBullet = *elem;
-            i++;
+            bullet_counter++;
             if(pBullet->GetY() < 0)//il proiettile va oltre il bordo superiore dello schermo
             {
                 pBullet->SetEnabled(false);
@@ -238,7 +240,7 @@ class SFMLGameTest1Scena : public SFMLScena
                     {
                         SFMLExplosion *explosion = new SFMLExplosion(_ptrWindow, sf::IntRect(90,10, 34,34), "M484ExplosionSet1.png",0,7);
                         explosion->SetPosition((*go)->GetX() + 10,(*go)->GetY()+10);
-                         AddEnemy(explosion);
+                        AddEnemy(explosion);
 
                         (*go)->SetEnabled(false);
                         // elem = _bullets.erase(elem);
@@ -262,12 +264,25 @@ class SFMLGameTest1Scena : public SFMLScena
                 }
             }
         }
-        std::cout<<"Bullets count:"<<i<<std::endl;
+        //std::cout<<"Bullets count:"<<bullet_counter<<std::endl;
         for(auto& enemy : _enemies)
         {
+            enemy_counter++;
             if(enemy->GetEnabled())
                 enemy->Update();
         }
+
+        if(enemy_counter == 0)
+        {
+            State = GameState::End;
+        }
+        else if(enemy_counter > 0 && bullet_counter == 0 && _bulletRemaining == 0)
+        {
+            State = GameState::GameOver;
+        }
+
+        return State;
+        
     }
 
     virtual void Draw() override{

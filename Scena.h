@@ -1,8 +1,8 @@
 #ifndef OSK_SCENA_H
 #define OSK_SCENA_H
 
-
-#include"GameObject.h"
+#include "GameObject.h"
+#include "Enums.h"
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <string>
@@ -39,7 +39,7 @@ class Scena
     }
 
 
-    virtual void Update()
+    virtual GameState Update()
     {
         if( _gameObjects.size() > 0)
         {
@@ -55,7 +55,9 @@ class Scena
                     p = _gameObjects.erase(p);
             }
         }
-    };
+
+        return GameState::Play;
+    }
     
     virtual void Draw(){
 
@@ -67,7 +69,7 @@ class Scena
                     go->Draw();
             }
         }
-    };
+    }
 
     ~Scena()
     {
