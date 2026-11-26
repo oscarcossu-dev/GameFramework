@@ -71,7 +71,7 @@ class Scena
         }
     }
 
-    ~Scena()
+    virtual ~Scena()
     {
         _gameObjects.clear();
     }    

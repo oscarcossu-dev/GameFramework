@@ -182,6 +182,15 @@ class SFMLGameTest1Scena : public SFMLScena
         _hud->SetEnabled(true);
     }
 
+    virtual ~SFMLGameTest1Scena() override
+    {
+        _bullets.clear();
+        _enemies.clear();
+        if(_textForHud) delete _textForHud;
+        if(_hud) delete _hud;
+    }
+
+
     void AddBullet(int x, int y)
     {
         std::chrono::steady_clock::time_point  now = std::chrono::steady_clock::now();
@@ -216,6 +225,7 @@ class SFMLGameTest1Scena : public SFMLScena
             if((*go)->GetEnabled() == false)
             {
                 go = _enemies.erase(go);
+                //delete *go;
             }
             else
                 go++;
@@ -243,9 +253,6 @@ class SFMLGameTest1Scena : public SFMLScena
                         AddEnemy(explosion);
 
                         (*go)->SetEnabled(false);
-                        // elem = _bullets.erase(elem);
-                        // delete pBullet;
-                        // pBullet = nullptr;
                         hit = true;
                         break;
                     }

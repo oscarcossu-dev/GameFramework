@@ -128,10 +128,8 @@ class SFMLStaticImageBackground : public IBackground
         }
     }
 
-    ~SFMLStaticImageBackground()
+    virtual ~SFMLStaticImageBackground()
     {
-        if(_pDrawable) delete _pDrawable;
-        if(_pTransformable) delete _pTransformable;
         if(_pTexture) delete _pTexture;
     }
 };

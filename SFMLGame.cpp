@@ -157,4 +157,10 @@ void SFMLGame::CleanupScene()
         delete _pScena;
         _pScena = nullptr;
     }
+
+    if( _textForHud != nullptr)
+    {
+        delete _textForHud;
+        _textForHud = nullptr;
+    }
 }

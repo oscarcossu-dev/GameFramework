@@ -23,7 +23,7 @@ class SFMLGame : public Game
 
     public:
         SFMLGame(int w, int h);
-        ~SFMLGame();
+        virtual ~SFMLGame() override;
 
         // Metodi specifici per la gestione dell'SFML
         //void InitializeScene();

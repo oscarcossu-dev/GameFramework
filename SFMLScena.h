@@ -24,6 +24,11 @@ class SFMLScena: public Scena
         _pBackground = new SFMLStaticImageBackground(_ptrWindow, bgfilename);
     }
 
+    virtual ~SFMLScena() override
+    {
+        delete _pBackground;
+        _pBackground = nullptr;
+    }
     /*virtual void Update() override
     {
     }*/
